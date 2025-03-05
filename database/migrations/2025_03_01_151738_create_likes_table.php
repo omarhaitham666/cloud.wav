@@ -11,29 +11,23 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('artists')) {
-        Schema::create('artists', function (Blueprint $table) {
-
+        if (!Schema::hasTable('likes')) {
+        Schema::create('likes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->string('name');
-            $table->string('profile_image');
-            $table->string('email');
-            $table->string('number');
-            $table->string('whatsapp_number');
-            $table->text('details');
-            $table->string('division');
-            $table->text('social_links');
+            $table->foreignId('song_id')->constrained()->onDelete('cascade');
             $table->timestamps();
+
+            $table->unique(['user_id', 'song_id']);
         });
     }
-    }
+}
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('artists');
+        Schema::dropIfExists('likes');
     }
 };

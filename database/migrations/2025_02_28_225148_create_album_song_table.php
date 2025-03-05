@@ -11,12 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
+        if (!Schema::hasTable('album_song')) {
         Schema::create('album_song', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('album_id')->constrained()->onDelete('cascade');
-            $table->foreignId('song_id')->constrained()->onDelete('cascade');
+            $table->foreignId('album_id')->constrained('albums')->onDelete('cascade');
+            $table->foreignId('song_id')->constrained('songs')->onDelete('cascade');
             $table->timestamps();
         });
+    }
     }
 
     /**

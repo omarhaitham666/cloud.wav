@@ -15,10 +15,16 @@ class Album extends Model
         'album_cover',
     ];
 
+    // public function songs()
+    // {
+    //     return $this->belongsToMany(Song::class);
+    // }
+
     public function songs()
-    {
-        return $this->belongsToMany(Song::class);
-    }
+{
+    return $this->belongsToMany(Song::class, 'album_song', 'album_id', 'song_id');
+}
+
 
     public function artist(){
         return $this->belongsTo(Artist::class,'artist_id');

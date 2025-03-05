@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('artists', function (Blueprint $table) {
+        Schema::table('songs', function (Blueprint $table) {
             //
-            // $table->string('division');
-            if (!Schema::hasColumn('artists', 'division')) {
-                $table->string('division')->nullable(false);
-            }
+            $table->integer('plays')->default(0);
         });
     }
 
@@ -25,8 +22,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('artists', function (Blueprint $table) {
+        Schema::table('songs', function (Blueprint $table) {
             //
+            $table->dropColumn('plays');
+            
         });
     }
 };
