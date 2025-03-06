@@ -73,13 +73,12 @@ $idCardPath = $request->file('famous_id_card_image')->storeAs('uploads/id_cards'
         ], 201);
     }
 
-    public function index()
+public function index()
     {
         $requests = FamousArtistRequest::with('user')->get();
         return response()->json($requests);
     }
 
-  
 public function updateStatus(Request $request, $id)
 {
     $famousArtistRequest = FamousArtistRequest::findOrFail($id);
@@ -140,8 +139,5 @@ public function updateStatus(Request $request, $id)
 
     return response()->json(['message' => 'تم تحديث حالة الطلب بنجاح']);
 }
-
-
-
 
 }

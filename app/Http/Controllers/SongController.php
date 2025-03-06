@@ -2,12 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Album;
 use App\Models\Artist;
 use App\Models\Like;
 use App\Models\Song;
-use App\Models\User;
-use FFMpeg\FFMpeg;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,9 +29,7 @@ public function uploadSong(Request $request)
         $coverPath = $request->file('cover_path')->store('songs/covers', 'public');
         $songPath = $request->file('song_path')->store('songs/files', 'public');
 
-        // $ffmpeg = FFMpeg::create();
-        // $audio = $ffmpeg->open(storage_path("app/public/{$songPath}"));
-        // $duration = $audio->getFormat()->get('duration'); 
+        
     
         $song = Song::create([
             'title' => $request->title,
@@ -42,7 +37,6 @@ public function uploadSong(Request $request)
             'artist_name' => $artist->name,
             'cover_path' => $coverPath,
             'song_path' => $songPath,
-            // 'duration'=>$duration,
         ]);
 
         
@@ -65,33 +59,39 @@ public function uploadSong(Request $request)
     }
 }
 
-
-    public function deleteSong($id)
-    {
-        $song = Song::findOrFail($id);
-
-        
-        // if (Auth::id() !== $song->artist_id && Auth::user()->role !== 'admin,artist') {
-        //     return response()->json(['error' => 'غير مسموح لك بحذف هذه الأغنية'], 403);
-        // }
-        if (Auth::id() !== $song->artist_id && !in_array(Auth::user()->role, ['admin', 'artist'])) {
-            return response()->json(['error' => 'غير مسموح لك بحذف هذه الأغنية'], 403);
-        }
-        
-       
-        try {
-            
-            Storage::disk('public')->delete([$song->song_path, $song->cover_path]);
-
-            
-            $song->delete();
-
-            return response()->json(['message' => 'تم حذف الأغنية بنجاح']);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'حدث خطأ أثناء الحذف'], 500);
-        }
-        
+public function deleteSong($id)
+{
+    $song = Song::findOrFail($id);
+    
+    if (!Auth::check()) {
+        return response()->json(['error' => 'يجب تسجيل الدخول'], 401);
     }
+
+    $user = Auth::user();
+
+    
+    if ($user->id !== $song->artist_id && !in_array(trim($user->role), ['admin', 'artist'])) {
+        return response()->json(['error' => 'غير مسموح لك بحذف هذه الأغنية'], 403);
+    }
+
+    try {
+       
+        if (Storage::disk('public')->exists($song->song_path)) {
+            Storage::disk('public')->delete($song->song_path);
+        }
+        if (Storage::disk('public')->exists($song->cover_path)) {
+            Storage::disk('public')->delete($song->cover_path);
+        }
+
+        
+        $song->delete();
+
+        return response()->json(['message' => 'تم حذف الأغنية بنجاح']);
+    } catch (\Exception $e) {
+        return response()->json(['error' => 'حدث خطأ أثناء الحذف: ' . $e->getMessage()], 500);
+    }
+}
+
 
 
 
@@ -156,8 +156,8 @@ public function getSong($id)
     $isLiked = false;
     if ($userId) {
         $isLiked = Like::where('user_id', $userId)
-                       ->where('song_id', $song->id)
-                       ->exists();
+        ->where('song_id', $song->id)
+        ->exists();
     }
 
     $isLiked = $userId ? Like::where('user_id', $userId)->where('song_id', $song->id)->exists() : false;
@@ -170,7 +170,6 @@ public function getSong($id)
         'cover_url' => asset("storage/{$song->cover_path}"),
         'song_url' => asset("storage/{$song->song_path}"),
         'likes_count' => $song->likes_count,
-        // 'isLiked' => $userId ? Like::where('user_id', $userId)->where('song_id', $song->id)->exists() : false,
         'isLiked' => $isLiked,
         'plays' => $song->plays,
     ]);
@@ -181,10 +180,10 @@ public function getSong($id)
 
 public function trendingSongs(){
     $songs=Song::withCount('likes')
-               ->orderByDesc('likes_count')
-               ->take(10)
-               ->get()
-               ->map(function($song){
+    ->orderByDesc('likes_count')
+    ->take(10)
+    ->get()
+    ->map(function($song){
                 return[
                     'id'=>$song->id,
                     'title'=>$song->title,
@@ -192,9 +191,9 @@ public function trendingSongs(){
                     'likes_count'=>$song->likes_count,
                     'audio_url'=>asset("storage/{$song->song_path}"),
                     ];
-               });
+            });
 
-               return response()->json($songs);
+            return response()->json($songs);
 
     
 }
@@ -205,7 +204,7 @@ public function downloadSong($id)
 
     $song = Song::findOrFail($id);
 
-    // التأكد من أن الملف موجود
+    
     $filePath = storage_path("app/public/{$song->song_path}");
     
 
@@ -213,8 +212,7 @@ public function downloadSong($id)
         return response()->json(['error' => 'الملف غير موجود'], 404);
     }
 
-    // return response()->download($filePath, $song->title . '.mp3');
-    return Response::download($filePath, $song->title . '.mp3', [
+return Response::download($filePath, $song->title . '.mp3', [
         'Content-Type' => 'audio/mpeg',
         'Content-Disposition' => 'attachment; filename="' . $song->title . '.mp3"',
         ]);
@@ -222,33 +220,10 @@ public function downloadSong($id)
 
 
 
-    // public function playSong($id){
-    //     $song=Song::findOrFail($id);
-    //     $song->increment('plays');
-
-    //     return response()->json([
-    //         'message'=>'song played',
-    //         'song'=>[
-    //             'id'=>$song->id,
-    //             'title'=>$song->title,
-    //             'plays'=>$song->plays,
-    //             'song_path'=>asset("storage/{$song->song_path}")
-    //         ]
-
-    //     ]);
-    // }
-
-//     public function playSong($id)
-// {
-//     $song = Song::findOrFail($id);
-//     $song->increment('plays'); // زيادة عدد مرات التشغيل بمقدار 1
-//     return response()->json(['message' => 'تم تشغيل الأغنية', 'plays' => $song->plays]);
-// }
-
-public function playSong($id)
+    public function playSong($id)
 {
     $song = Song::findOrFail($id);
-    $song->increment('plays'); // زيادة عدد مرات التشغيل بمقدار 1
+    $song->increment('plays'); 
 
     return response()->json([
         'message' => 'تم تشغيل الأغنية',
@@ -261,7 +236,4 @@ public function playSong($id)
     ]);
 }
 
-
-
-
-    }
+}

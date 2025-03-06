@@ -6,7 +6,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
 class ForgotPasswordController extends Controller
 {
@@ -38,8 +37,6 @@ class ForgotPasswordController extends Controller
 
     }
 
-
-
     public function resetPassword(Request $request){
         $request->validate([
             'email'=>'required|email',
@@ -62,6 +59,4 @@ class ForgotPasswordController extends Controller
     return response()->json(['message' => 'Password has been successfully reset']);
     }
 
-
-   
 }

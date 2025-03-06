@@ -92,9 +92,9 @@ public function updateStatus(Request $request, $id)
             $user->save();
         }
 
-        // إنشاء السجل في جدول artists إذا لم يكن موجودًا
+        
         Artist::firstOrCreate(
-            ['user_id' => $user->id], // شرط التحقق من وجود السجل
+            ['user_id' => $user->id],
             [
                 'name' => $ArtistRequest->name,
                 'email' => $ArtistRequest->email,
