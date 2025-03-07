@@ -7,6 +7,7 @@ use App\Http\Controllers\ArtistRequestController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\FamousArtistRequestsController;
 use App\Http\Controllers\ForgotPasswordController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SongController;
 use Illuminate\Http\Request;
 
@@ -52,7 +53,7 @@ Route::middleware('auth:sanctum')->group(function(){
     Route::post('/famous-artist-requests', [FamousArtistRequestsController::class, 'store']);
     Route::post('/songs/{id}/like', [SongController::class, 'likeSong']);
     Route::post('/songs/{id}/play', [SongController::class, 'playSong']);
-
+    Route::post('/services',[ServiceController::class,'store']);
 }); 
 
 Route::middleware(['auth:sanctum', 'isArtist'])->group(function () {
@@ -75,7 +76,9 @@ Route::middleware(['auth:sanctum','admin'])->group(function(){
     Route::get('/famous_artist-requests', [FamousArtistRequestsController::class, 'index']);
     Route::put('/artists/{id}', [ArtistController::class, 'update']);
     Route::delete('/artists/{id}', [ArtistController::class, 'destroy']);
-
+    Route::put('/service-update-status/{id}',[ServiceController::class,'updateStatus']);
+    Route::get('/services/type/{type}', [ServiceController::class, 'getByType']);
+    Route::delete('/service-delete/{id}', [ServiceController::class, 'delete']);
 });
 
 
