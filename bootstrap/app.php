@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Middleware\AdminMiddleware;
-use App\Http\Middleware\Cors;
 use App\Http\Middleware\IsArtist;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,7 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'admin'=>AdminMiddleware::class,
             'isArtist' => IsArtist::class,
         ]);
-        $middleware->append(Cors::class);
+        $middleware->append(HandleCors::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
